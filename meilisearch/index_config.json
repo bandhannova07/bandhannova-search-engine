@@ -1,0 +1,55 @@
+{
+  "searchableAttributes": [
+    "title",
+    "content",
+    "url"
+  ],
+  "displayedAttributes": [
+    "id",
+    "title",
+    "url",
+    "snippet",
+    "timestamp"
+  ],
+  "rankingRules": [
+    "typo",
+    "words",
+    "proximity",
+    "attribute",
+    "sort",
+    "exactness"
+  ],
+  "stopWords": [
+    "the",
+    "a",
+    "an",
+    "and",
+    "or",
+    "but",
+    "in",
+    "on",
+    "at",
+    "to",
+    "for"
+  ],
+  "synonyms": {
+    "ai": ["artificial intelligence", "machine learning"],
+    "ml": ["machine learning"],
+    "dl": ["deep learning"]
+  },
+  "typoTolerance": {
+    "enabled": true,
+    "minWordSizeForTypos": {
+      "oneTypo": 5,
+      "twoTypos": 9
+    },
+    "disableOnWords": [],
+    "disableOnAttributes": []
+  },
+  "faceting": {
+    "maxValuesPerFacet": 100
+  },
+  "pagination": {
+    "maxTotalHits": 1000
+  }
+}

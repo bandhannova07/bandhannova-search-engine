@@ -1,0 +1,42 @@
+# Git ignore patterns
+
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk
+
+# Go
+api
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+go.sum
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite
+
+# Temporary
+tmp/
+temp/

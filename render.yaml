@@ -1,0 +1,84 @@
+services:
+  # Note: Using Supabase PostgreSQL (external)
+  # No need for Render PostgreSQL service
+  
+  # Meilisearch - Self-hosted Search Engine
+  - type: web
+    name: search-engine
+    env: docker
+    dockerfilePath: ./meilisearch/Dockerfile
+    plan: standard
+    region: singapore
+    disk:
+      name: meilisearch-data
+      mountPath: /meili_data
+      sizeGB: 10
+    envVars:
+      - key: MEILI_MASTER_KEY
+        generateValue: true
+      - key: MEILI_DB_PATH
+        value: /meili_data
+      - key: MEILI_ENV
+        value: production
+      - key: MEILI_NO_ANALYTICS
+        value: true
+      - key: MEILI_HTTP_ADDR
+        value: 0.0.0.0:7700
+    healthCheckPath: /health
+
+  # Web Crawler - Background Worker
+  - type: worker
+    name: web-crawler
+    env: rust
+    buildCommand: cargo build --release
+    startCommand: ./target/release/search-crawler
+    plan: starter
+    region: singapore
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://postgres:xiPouPKFLCKlKWNK@db.pubzdhbwgewxrgqpiefv.supabase.co:5432/postgres
+      - key: MEILISEARCH_URL
+        fromService:
+          name: search-engine
+          type: web
+          property: host
+      - key: MEILISEARCH_KEY
+        fromService:
+          name: search-engine
+          type: web
+          envVarKey: MEILI_MASTER_KEY
+      - key: CRAWL_CONCURRENCY
+        value: 100
+      - key: CRAWL_DELAY_MS
+        value: 1000
+      - key: MAX_DEPTH
+        value: 3
+      - key: RUST_LOG
+        value: info
+
+  # API Server - Web Service
+  - type: web
+    name: search-api
+    env: go
+    buildCommand: go build -o api main.go
+    startCommand: ./api
+    plan: starter
+    region: singapore
+    envVars:
+      - key: MEILISEARCH_URL
+        fromService:
+          name: search-engine
+          type: web
+          property: host
+      - key: MEILISEARCH_KEY
+        fromService:
+          name: search-engine
+          type: web
+          envVarKey: MEILI_MASTER_KEY
+      - key: PORT
+        value: 8080
+      - key: RATE_LIMIT
+        value: 100
+      - key: GIN_MODE
+        value: release
+    healthCheckPath: /health
