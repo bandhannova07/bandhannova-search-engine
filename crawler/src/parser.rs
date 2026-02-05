@@ -141,40 +141,50 @@ impl Parser {
     }
 
     fn extract_content(&self, document: &Html) -> String {
-        let mut fragment = document.clone();
-        
-        // List of selectors to remove (noise/boilerplate)
-        let noise_selectors = [
-            "script", "style", "nav", "header", "footer", 
-            "iframe", "noscript", ".sidebar", ".menu", ".footer",
-            "#mw-navigation", ".navbox", ".catlinks" // Wikipedia specific
+        let content_selectors = [
+            ".mw-parser-output > p", // Wikipedia intro paragraphs
+            "article p", 
+            "main p", 
+            "#content p", 
+            ".post-content p",
+            "p" // Fallback
         ];
-
-        let mut html_str = fragment.html();
-
-        // Use more refined approach: try to find main content or article
-        let content_selectors = ["article", "main", "#content", "#mw-content-text", ".post-content", ".article-content"];
         
+        let mut paragraphs = Vec::new();
+
         for selector_str in content_selectors {
             if let Ok(selector) = Selector::parse(selector_str) {
-                if let Some(element) = document.select(&selector).next() {
-                    html_str = element.html();
-                    break;
+                for element in document.select(&selector) {
+                    let text = element.text().collect::<String>().trim().to_string();
+                    // Basic heuristic: a good description paragraph is 100-500 chars 
+                    // and doesn't look like a menu (lots of Pipe or Brackets)
+                    if text.len() > 50 && !text.contains("|") && text.split_whitespace().count() > 10 {
+                        // Clean the text: remove [1], [edit], (listen), etc.
+                        let mut clean_text = text;
+                        // Regex-like removal of squared brackets [..]
+                        while let Some(start) = clean_text.find('[') {
+                            if let Some(end) = clean_text[start..].find(']') {
+                                clean_text.replace_range(start..start + end + 1, "");
+                            } else {
+                                break;
+                            }
+                        }
+                        
+                        paragraphs.push(clean_text.trim().to_string());
+                        if paragraphs.len() >= 5 { break; } // Get first 5 good ones
+                    }
                 }
             }
+            if !paragraphs.is_empty() { break; }
         }
 
-        // Convert selected HTML to plain text
-        let text = html2text::from_read(html_str.as_bytes(), 120);
-        
-        // Clean up whitespace and boilerplate
-        text.lines()
-            .map(|line| line.trim())
-            .filter(|line| !line.is_empty())
-            // Filter out very short lines that are likely UI labels
-            .filter(|line| line.len() > 20 || line.chars().any(|c| c == '.' || c == ','))
-            .collect::<Vec<_>>()
-            .join(" ")
+        if paragraphs.is_empty() {
+             // Total fallback: take the whole body and hope for the best
+             let text = html2text::from_read(document.html().as_bytes(), 120);
+             return text.chars().take(2000).collect();
+        }
+
+        paragraphs.join(" ")
             .chars()
             .take(50000)
             .collect()

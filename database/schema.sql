@@ -1,3 +1,8 @@
+-- Reset Database (Use with caution!)
+DROP VIEW IF EXISTS crawl_progress;
+DROP TABLE IF EXISTS crawl_stats;
+DROP TABLE IF EXISTS urls;
+
 -- URL Queue Table
 CREATE TABLE IF NOT EXISTS urls (
     id SERIAL PRIMARY KEY,

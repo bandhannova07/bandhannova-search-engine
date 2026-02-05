@@ -39,16 +39,24 @@ impl IndexerClient {
         let id = self.generate_id(url);
 
         // Fallback for description if empty
-        let final_description = if description.is_empty() {
+        let mut final_description = if description.is_empty() {
             content
                 .chars()
-                .take(300)
+                .take(400) // Increase take for better sentence completion
                 .collect::<String>()
                 .trim()
                 .to_string()
         } else {
             description.to_string()
         };
+
+        // Final polishing of the description: remove redundant whitespace and artifacts
+        final_description = final_description
+            .replace("  ", " ")
+            .replace(" .", ".")
+            .replace(" ,", ",")
+            .trim()
+            .to_string();
 
         let document = Document {
             id,
