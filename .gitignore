@@ -13,7 +13,6 @@ api/api.exe
 *.dll
 *.so
 *.dylib
-go.sum
 
 # Environment
 .env
