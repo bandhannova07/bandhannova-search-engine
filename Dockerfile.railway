@@ -10,9 +10,8 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy crawler files
-COPY crawler/Cargo.toml crawler/Cargo.lock ./
-COPY crawler/src ./src
+# Copy entire crawler directory
+COPY crawler/ ./
 
 # Build release binary
 RUN cargo build --release
