@@ -6,7 +6,8 @@ Cargo.lock
 **/*.rs.bk
 
 # Go
-api
+api/api
+api/api.exe
 *.exe
 *.exe~
 *.dll
