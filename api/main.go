@@ -164,7 +164,7 @@ func handleStats(c *gin.Context) {
 	stats, err := index.GetStats()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to get stats",
+			"error": "Failed to get stats: " + err.Error(),
 		})
 		return
 	}
