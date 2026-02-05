@@ -10,9 +10,11 @@ use tracing::{debug, error};
 pub struct Document {
     pub id: String,
     pub url: String,
+    pub name: String,
     pub title: String,
+    pub description: String,
+    pub icon: String,
     pub content: String,
-    pub snippet: String,
     pub timestamp: String,
 }
 
@@ -32,24 +34,30 @@ impl IndexerClient {
         }
     }
 
-    pub async fn index_document(&self, url: &str, title: &str, content: &str) -> Result<()> {
+    pub async fn index_document(&self, url: &str, name: &str, title: &str, description: &str, icon: &str, content: &str) -> Result<()> {
         // Generate unique ID from URL
         let id = self.generate_id(url);
 
-        // Create snippet (first 200 chars)
-        let snippet = content
-            .chars()
-            .take(200)
-            .collect::<String>()
-            .trim()
-            .to_string();
+        // Fallback for description if empty
+        let final_description = if description.is_empty() {
+            content
+                .chars()
+                .take(300)
+                .collect::<String>()
+                .trim()
+                .to_string()
+        } else {
+            description.to_string()
+        };
 
         let document = Document {
             id,
             url: url.to_string(),
+            name: name.to_string(),
             title: title.to_string(),
+            description: final_description,
+            icon: icon.to_string(),
             content: content.to_string(),
-            snippet,
             timestamp: Utc::now().to_rfc3339(),
         };
 

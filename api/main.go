@@ -27,10 +27,12 @@ type SearchResponse struct {
 }
 
 type SearchResult struct {
-	Title   string  `json:"title"`
-	URL     string  `json:"url"`
-	Snippet string  `json:"snippet"`
-	Score   float64 `json:"score"`
+	URL            string  `json:"url"`
+	UrlName        string  `json:"urlName"`
+	UrlTitle       string  `json:"urlTitle"`
+	UrlDescription string  `json:"urlDescription"`
+	UrlIcon        string  `json:"urlIcon"`
+	Score          float64 `json:"score"`
 }
 
 type StatsResponse struct {
@@ -241,10 +243,12 @@ func performSearch(c *gin.Context, req SearchRequest) {
 		hitMap := hit.(map[string]interface{})
 
 		result := SearchResult{
-			Title:   getStringField(hitMap, "title"),
-			URL:     getStringField(hitMap, "url"),
-			Snippet: getStringField(hitMap, "snippet"),
-			Score:   1.0, // Meilisearch doesn't expose scores directly
+			URL:            getStringField(hitMap, "url"),
+			UrlName:        getStringField(hitMap, "name"),
+			UrlTitle:       getStringField(hitMap, "title"),
+			UrlDescription: getStringField(hitMap, "description"),
+			UrlIcon:        getStringField(hitMap, "icon"),
+			Score:          1.0,
 		}
 		results = append(results, result)
 	}

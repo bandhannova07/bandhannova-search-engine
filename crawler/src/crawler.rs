@@ -161,7 +161,7 @@ impl Crawler {
         };
 
         // Index document
-        if let Err(e) = indexer.index_document(url, &parsed.title, &parsed.content).await {
+        if let Err(e) = indexer.index_document(url, &parsed.name, &parsed.title, &parsed.description, &parsed.icon, &parsed.content).await {
             error!("Failed to index {}: {}", url, e);
             Self::mark_url_failed(pool, id).await?;
             return Err(e);
