@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ['rust', 'cargo']
+
+[phases.build]
+cmds = ['cd crawler && cargo build --release']
+
+[start]
+cmd = 'cd crawler && ./target/release/search-crawler'
