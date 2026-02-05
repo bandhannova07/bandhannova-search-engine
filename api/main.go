@@ -20,17 +20,17 @@ type SearchRequest struct {
 }
 
 type SearchResponse struct {
-	Query       string           `json:"query"`
-	Total       int64            `json:"total"`
-	Results     []SearchResult   `json:"results"`
-	SearchTime  int64            `json:"search_time_ms"`
+	Query      string         `json:"query"`
+	Total      int64          `json:"total"`
+	Results    []SearchResult `json:"results"`
+	SearchTime int64          `json:"search_time_ms"`
 }
 
 type SearchResult struct {
-	Title     string  `json:"title"`
-	URL       string  `json:"url"`
-	Snippet   string  `json:"snippet"`
-	Score     float64 `json:"score"`
+	Title   string  `json:"title"`
+	URL     string  `json:"url"`
+	Snippet string  `json:"snippet"`
+	Score   float64 `json:"score"`
 }
 
 type StatsResponse struct {
@@ -53,7 +53,11 @@ func main() {
 
 	meilisearchKey := os.Getenv("MEILISEARCH_KEY")
 	if meilisearchKey == "" {
-		log.Fatal("MEILISEARCH_KEY must be set")
+		meilisearchKey = os.Getenv("MEILI_MASTER_KEY")
+	}
+
+	if meilisearchKey == "" {
+		log.Fatal("MEILISEARCH_KEY or MEILI_MASTER_KEY must be set")
 	}
 
 	port := os.Getenv("PORT")
@@ -156,7 +160,7 @@ func handleHealth(c *gin.Context) {
 
 func handleStats(c *gin.Context) {
 	index := meiliClient.Index("web_pages")
-	
+
 	stats, err := index.GetStats()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -165,10 +169,10 @@ func handleStats(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, StatsResponse{
-		TotalIndexed: stats.NumberOfDocuments,
-		IndexSizeMB:  stats.DatabaseSize / (1024 * 1024),
-		LastCrawl:    time.Now().Format(time.RFC3339),
+	c.JSON(http.StatusOK, gin.H{
+		"total_indexed": stats.NumberOfDocuments,
+		"is_indexing":   stats.IsIndexing,
+		"last_crawl":    time.Now().Format(time.RFC3339),
 	})
 }
 
@@ -191,7 +195,7 @@ func handleSearch(c *gin.Context) {
 
 	// Search Meilisearch
 	startTime := time.Now()
-	
+
 	index := meiliClient.Index("web_pages")
 	searchRes, err := index.Search(req.Query, &meilisearch.SearchRequest{
 		Limit:  int64(req.Limit),
@@ -211,7 +215,7 @@ func handleSearch(c *gin.Context) {
 	results := make([]SearchResult, 0)
 	for _, hit := range searchRes.Hits {
 		hitMap := hit.(map[string]interface{})
-		
+
 		result := SearchResult{
 			Title:   getStringField(hitMap, "title"),
 			URL:     getStringField(hitMap, "url"),
