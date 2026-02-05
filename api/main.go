@@ -103,6 +103,7 @@ func main() {
 	r.GET("/", handleRoot)
 	r.GET("/health", handleHealth)
 	r.GET("/stats", handleStats)
+	r.GET("/search", handleSearchGET) // Added for browser testing
 	r.POST("/search", handleSearch)
 
 	// Start server
@@ -184,7 +185,30 @@ func handleSearch(c *gin.Context) {
 		})
 		return
 	}
+	performSearch(c, req)
+}
 
+func handleSearchGET(c *gin.Context) {
+	query := c.Query("q")
+	if query == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Query parameter 'q' is required",
+		})
+		return
+	}
+
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+
+	req := SearchRequest{
+		Query:  query,
+		Limit:  limit,
+		Offset: offset,
+	}
+	performSearch(c, req)
+}
+
+func performSearch(c *gin.Context, req SearchRequest) {
 	// Set defaults
 	if req.Limit == 0 {
 		req.Limit = 20
