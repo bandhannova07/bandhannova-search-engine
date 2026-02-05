@@ -30,6 +30,7 @@ services:
   - type: worker
     name: web-crawler
     env: rust
+    rootDir: ./crawler
     buildCommand: cargo build --release
     startCommand: ./target/release/search-crawler
     plan: starter
@@ -60,6 +61,7 @@ services:
   - type: web
     name: search-api
     env: go
+    rootDir: ./api
     buildCommand: go build -o api main.go
     startCommand: ./api
     plan: starter
